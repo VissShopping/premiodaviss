@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roleta de Prêmios da VISS</title>
+<meta name="description" content="Gire a roleta e ganhe até 20% de desconto ou camisetas grátis no seu pedido.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vissshopping.github.io/premiodaviss/">
+<meta property="og:title" content="🎡 Roleta de Prêmios da VISS">
+<meta property="og:description" content="Gire e ganhe até 20% de desconto ou camisetas grátis. Todo giro ganha!">
+<meta property="og:image" content="https://vissshopping.github.io/premiodaviss/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#16213f">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&family=JetBrains+Mono:wght@600&display=swap">
+<style>
+/* Layout: uma tela só, estilo serigrafia — roda no centro, etiqueta de prêmio abaixo, regras no rodapé. Visual único (tinta sobre tecido escuro). */
+:root {
+  --ground: #16213f;      /* malha azul-marinho */
+  --ground-2: #1e2c52;
+  --ink-yellow: #ffd23f;
+  --ink-pink: #ff5d8f;
+  --ink-teal: #2ec4b6;
+  --ink-orange: #ff8c42;
+  --ink-white: #f5f3ee;
+  --fg: #f5f3ee;
+  --muted: #a9b3cf;
+  --line: rgba(245, 243, 238, .16);
+  --font-display: "Bowlby One", "Arial Black", Impact, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+html { -webkit-text-size-adjust: 100%; }
+button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+body {
+  background:
+    radial-gradient(circle at 50% 30%, var(--ground-2), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.018) 0 2px, transparent 2px 6px),
+    var(--ground);
+  background-color: var(--ground);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 20px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-teal);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(34px, 9vw, 54px);
+  line-height: .95;
+  margin: 6px 0 0;
+  text-wrap: balance;
+  color: var(--ink-yellow);
+  text-shadow: 3px 3px 0 var(--ink-pink);
+}
+.lead { margin: 10px auto 0; max-width: 38ch; color: var(--muted); }
+@media (max-width: 480px) {
+  .lead { font-size: 15px; margin-top: 8px; }
+  .code { font-size: 20px; }
+  .code-row .btn { width: 100%; }
+}
+.shop {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  font-size: 18px !important;
+  padding-block: 16px !important;
+  box-shadow: 0 4px 0 #16213f;
+  text-decoration: none;
+  background: var(--ink-pink);
+  color: var(--ground);
+  font: 800 16px var(--font-body);
+  padding: 14px 22px;
+  border-radius: 10px;
+}
+.shop:hover { filter: brightness(1.05); }
+.shop:focus-visible { outline: 3px solid var(--ink-teal); outline-offset: 3px; }
+
+.wheel-box {
+  position: relative;
+  /* no celular, a roda + título cabem na primeira tela */
+  width: min(100%, 420px, 56svh);
+  aspect-ratio: 1;
+  max-width: 100%;
+}
+.wheel-box canvas { width: 100%; height: 100%; display: block; }
+.pointer {
+  position: absolute;
+  top: -6px; left: 50%;
+  width: 34px; height: 44px;
+  transform: translateX(-50%);
+  z-index: 2;
+  filter: drop-shadow(0 3px 0 rgba(0,0,0,.35));
+}
+.pointer.tick { animation: tick .12s ease-out; }
+@keyframes tick { 50% { transform: translateX(-50%) rotate(-14deg); } }
+.hub {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 26%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink-yellow);
+  color: var(--ground);
+  font-family: var(--font-display);
+  font-size: clamp(15px, 4.6vw, 22px);
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: 0 0 0 5px var(--ground), 0 0 0 9px var(--ink-white), 0 6px 0 9px rgba(0,0,0,.3);
+  transition: transform .15s ease;
+}
+.hub:hover:not(:disabled) { transform: translate(-50%, -50%) scale(1.05); }
+.hub:active:not(:disabled) { transform: translate(-50%, -50%) scale(.97); }
+.hub:disabled { cursor: default; background: var(--muted); }
+.hub:focus-visible { outline: 3px solid var(--ink-teal); outline-offset: 10px; }
+
+.status { min-height: 1.5em; font-weight: 600; color: var(--muted); margin: 0; }
+
+/* Etiqueta do prêmio: parece uma tag de roupa */
+.tag {
+  position: relative;
+  width: 100%;
+  background: var(--ink-white);
+  color: var(--ground);
+  border-radius: 14px;
+  padding: 26px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 6px 6px 0 var(--ink-pink);
+  animation: pop .5s cubic-bezier(.2,1.4,.4,1);
+}
+.tag::before {
+  content: "";
+  position: absolute;
+  top: 10px; left: 50%;
+  width: 14px; height: 14px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--ground);
+}
+@keyframes pop { from { transform: scale(.8); opacity: 0; } }
+.tag .won { font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #6b7390; margin-top: 6px; }
+.tag .prize { font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); line-height: 1.05; text-wrap: balance; }
+.tag .rule { margin: 0; max-width: 40ch; color: #3d4766; }
+.code-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+.code {
+  font-family: var(--font-code);
+  font-size: 22px;
+  letter-spacing: .08em;
+  padding: 10px 16px;
+  border: 2px dashed var(--ground);
+  border-radius: 10px;
+  user-select: all;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.btn {
+  font: 800 15px var(--font-body);
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--ground);
+  color: var(--ink-white);
+  cursor: pointer;
+}
+.btn:hover { background: #26386a; }
+.btn:focus-visible { outline: 3px solid var(--ink-teal); outline-offset: 3px; }
+.tag .valid { font-size: 13px; color: #6b7390; margin: 0; }
+
+.rules {
+  width: 100%;
+  text-align: left;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.rules h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--fg); margin: 0 0 8px; }
+.rules ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 10; width: 100%; height: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tag, .pointer.tick { animation: none; }
+}
+</style>
+</head>
+<body style="margin:0">
+
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Gire e ganhe</div>
+    <h1>Roleta de Prêmios da VISS</h1>
+    <p class="lead">Um giro por cliente. Todo giro dá prêmio: até 20% de desconto ou camisetas grátis no seu pedido.</p>
+  </header>
+
+  <div class="wheel-box">
+    <svg class="pointer" id="pointer" viewBox="0 0 34 44" aria-hidden="true">
+      <path d="M17 44 L2 10 A16 16 0 0 1 32 10 Z" fill="#ff5d8f" stroke="#f5f3ee" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="17" cy="14" r="5" fill="#f5f3ee"/>
+    </svg>
+    <canvas id="wheel" role="img" aria-label="Roleta com prêmios: de 3% a 20% de desconto e de 1 a 5 camisetas grátis, conforme a quantidade do pedido"></canvas>
+    <button class="hub" id="spin" type="button">GIRAR</button>
+  </div>
+
+  <p class="status" id="status" aria-live="polite">Toque em GIRAR para descobrir seu prêmio.</p>
+
+  <section class="tag" id="result" hidden aria-live="polite">
+    <div class="won">Você ganhou</div>
+    <div class="prize" id="prize"></div>
+    <p class="rule" id="rule"></p>
+    <a class="shop" id="redeem" href="https://wa.me/" target="_blank" rel="noopener">Resgatar prêmio</a>
+    <div class="code-row">
+      <span class="code" id="code"></span>
+      <button class="btn" id="copy" type="button">Copiar cupom</button>
+    </div>
+    <p class="valid" id="valid"></p>
+  </section>
+
+  <footer class="rules">
+    <h2>Regras</h2>
+    <ul>
+      <li>Válido para 1 giro por cliente.</li>
+      <li>Cada prêmio vale para pedidos a partir da quantidade mínima de camisetas indicada.</li>
+      <li>Cupons não são cumulativos com outras promoções.</li>
+      <li>Resgate seu prêmio pelo WhatsApp em até 7 dias após o giro.</li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+/* ===== CONFIGURAÇÃO: edite aqui códigos, chances e textos ===== */
+const PRIZES = {
+  d3: { label: ["3%", "COMPRE 5"], name: "3% de desconto", code: "VISS3", weight: 18, color: "#ffd23f", text: "#16213f",
+           rule: "3% de desconto em pedidos a partir de 5 camisetas." },
+  d5: { label: ["5%", "COMPRE 15"], name: "5% de desconto", code: "VISS5", weight: 15, color: "#2ec4b6", text: "#16213f",
+           rule: "5% de desconto em pedidos a partir de 15 camisetas." },
+  d8: { label: ["8%", "COMPRE 30"], name: "8% de desconto", code: "VISS8", weight: 12, color: "#ff8c42", text: "#16213f",
+           rule: "8% de desconto em pedidos a partir de 30 camisetas." },
+  d10: { label: ["10%", "COMPRE 30"], name: "10% de desconto", code: "VISS10", weight: 9, color: "#ff5d8f", text: "#16213f",
+           rule: "10% de desconto em pedidos a partir de 30 camisetas." },
+  d12: { label: ["12%", "COMPRE 50"], name: "12% de desconto", code: "VISS12", weight: 6, color: "#ffd23f", text: "#16213f",
+           rule: "12% de desconto em pedidos a partir de 50 camisetas." },
+  d15: { label: ["15%", "COMPRE 50"], name: "15% de desconto", code: "VISS15", weight: 4, color: "#2ec4b6", text: "#16213f",
+           rule: "15% de desconto em pedidos a partir de 50 camisetas." },
+  d20: { label: ["20%", "COMPRE 100"], name: "20% de desconto", code: "VISS20", weight: 2, color: "#ff5d8f", text: "#16213f",
+           rule: "20% de desconto em pedidos a partir de 100 camisetas. Desconto limitado a R$\u00a0100,00." },
+  g1a: { label: ["COMPRE 15", "GANHE 1 GRÁTIS"], name: "Compre 15, ganhe 1 camiseta grátis", code: "BRINDE15", weight: 12, color: "#f5f3ee", text: "#16213f",
+           rule: "Na compra de 15 camisetas, você ganha 1 camiseta grátis." },
+  g1b: { label: ["COMPRE 30", "GANHE 1 GRÁTIS"], name: "Compre 30, ganhe 1 camiseta grátis", code: "BRINDE30", weight: 10, color: "#f5f3ee", text: "#16213f",
+           rule: "Na compra de 30 camisetas, você ganha 1 camiseta grátis." },
+  g2: { label: ["COMPRE 50", "GANHE 2 GRÁTIS"], name: "Compre 50, ganhe 2 camisetas grátis", code: "BRINDE50", weight: 6, color: "#f5f3ee", text: "#16213f",
+           rule: "Na compra de 50 camisetas, você ganha 2 camisetas grátis." },
+  g3: { label: ["COMPRE 100", "GANHE 3 GRÁTIS"], name: "Compre 100, ganhe 3 camisetas grátis", code: "BRINDE100", weight: 4, color: "#f5f3ee", text: "#16213f",
+           rule: "Na compra de 100 camisetas, você ganha 3 camisetas grátis." },
+  g5: { label: ["COMPRE 300", "GANHE 5 GRÁTIS"], name: "Compre 300, ganhe 5 camisetas grátis", code: "BRINDE300", weight: 2, color: "#f5f3ee", text: "#16213f",
+           rule: "Na compra de 300 camisetas, você ganha 5 camisetas grátis." }
+};
+/* Ordem das fatias na roda (cada prêmio pode aparecer mais de uma vez) */
+const SLICES = ["d3", "g1a", "d5", "g1b", "d8", "g2", "d10", "g3", "d12", "g5", "d15", "d20"];
+const VALID_DAYS = 7;
+/* WhatsApp da loja que recebe o resgate: só números, com 55 + DDD (ex.: "5511912345678").
+   Vazio = o WhatsApp abre a lista de contatos (útil só para testar). */
+const WHATSAPP_NUMBER = "5511996818551";
+const redeemMessage = (p) => `Ganhei "${p.name}" e quero usar agora mesmo! Cupom: ${p.code}`;
+/* ============================================================ */
+
+const STORE_KEY = "roleta-viss-v2";
+const wheel = document.getElementById("wheel");
+const ctx = wheel.getContext("2d");
+const spinBtn = document.getElementById("spin");
+const statusEl = document.getElementById("status");
+const pointer = document.getElementById("pointer");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SEG = 360 / SLICES.length;
+let rotation = 0;
+let spinning = false;
+
+function store(get, val) {
+  try {
+    if (get) return JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (val === null) localStorage.removeItem(STORE_KEY);
+    else localStorage.setItem(STORE_KEY, JSON.stringify(val));
+  } catch (e) { return null; }
+}
+
+function drawWheel() {
+  const size = wheel.clientWidth || 420;
+  const dpr = window.devicePixelRatio || 1;
+  wheel.width = size * dpr; wheel.height = size * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const c = size / 2, r = c - 8;
+  ctx.clearRect(0, 0, size, size);
+  ctx.save();
+  ctx.translate(c, c);
+  ctx.rotate(rotation * Math.PI / 180);
+
+  // aro
+  ctx.beginPath(); ctx.arc(0, 0, r + 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#0e1630"; ctx.fill();
+
+  SLICES.forEach((key, i) => {
+    const p = PRIZES[key];
+    const a0 = (i * SEG - 90) * Math.PI / 180;
+    const a1 = ((i + 1) * SEG - 90) * Math.PI / 180;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, a0, a1); ctx.closePath();
+    ctx.fillStyle = p.color; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#16213f"; ctx.stroke();
+
+    // texto radial
+    ctx.save();
+    ctx.rotate((a0 + a1) / 2);
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = p.text;
+    const big = Math.max(14, size * 0.058);
+    const small = Math.max(9, size * 0.028);
+    // encolhe o texto até caber entre a borda e o botão GIRAR
+    const maxW = r - 16 - (size * 0.13 + 14);
+    const fit = (txt, px, weight, family) => {
+      ctx.font = `${weight} ${px}px ${family}`;
+      const w = ctx.measureText(txt).width;
+      if (w > maxW) { px *= maxW / w; ctx.font = `${weight} ${px}px ${family}`; }
+      return px;
+    };
+    const display = '"Bowlby One", "Arial Black", sans-serif';
+    const body = '"Figtree", system-ui, sans-serif';
+    const long = p.label[0].length > 4;
+    const b = fit(p.label[0], long ? big * 0.5 : big, 400, display);
+    ctx.fillText(p.label[0], r - 16, -small * 0.55 - (long ? 0 : 0));
+    fit(p.label[1], small, 800, body);
+    ctx.fillText(p.label[1], r - 16, long ? b * 0.95 : big * 0.52);
+    ctx.restore();
+  });
+
+  // pinos no aro
+  for (let i = 0; i < SLICES.length; i++) {
+    const a = (i * SEG - 90) * Math.PI / 180;
+    ctx.beginPath(); ctx.arc(Math.cos(a) * (r + 1), Math.sin(a) * (r + 1), 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#f5f3ee"; ctx.fill();
+  }
+  ctx.restore();
+}
+
+function pickSlice() {
+  const keys = Object.keys(PRIZES);
+  const total = keys.reduce((s, k) => s + PRIZES[k].weight, 0);
+  let roll = Math.random() * total, prize = keys[0];
+  for (const k of keys) { roll -= PRIZES[k].weight; if (roll < 0) { prize = k; break; } }
+  const options = SLICES.map((k, i) => k === prize ? i : -1).filter(i => i >= 0);
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+let audio;
+function tickSound() {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "square"; o.frequency.value = 1400;
+    g.gain.setValueAtTime(0.04, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.04);
+    o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + 0.05);
+  } catch (e) {}
+}
+
+function spin() {
+  if (spinning || store(true)) return;
+  spinning = true;
+  spinBtn.disabled = true;
+  statusEl.textContent = "Girando…";
+
+  const index = pickSlice();
+  const target = index * SEG + SEG * (0.2 + Math.random() * 0.6); // ponto da fatia sob o ponteiro
+  const from = rotation;
+  const base = ((360 - target) - (from % 360) + 720) % 360;
+  const to = from + base + 360 * (reduceMotion ? 1 : 6);
+  const duration = reduceMotion ? 900 : 5600;
+  const start = performance.now();
+  let lastSlice = Math.floor(((360 - (from % 360)) % 360) / SEG);
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 4);
+    rotation = from + (to - from) * eased;
+    drawWheel();
+    const under = Math.floor(((360 - (rotation % 360)) % 360) / SEG);
+    if (under !== lastSlice) {
+      lastSlice = under;
+      if (!reduceMotion) { pointer.classList.remove("tick"); void pointer.offsetWidth; pointer.classList.add("tick"); }
+      tickSound();
+    }
+    if (t < 1) requestAnimationFrame(frame);
+    else finish(SLICES[index]);
+  }
+  requestAnimationFrame(frame);
+}
+
+function formatDate(d) {
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function showResult(key, wonAt, animate) {
+  const p = PRIZES[key];
+  document.getElementById("prize").textContent = p.name;
+  document.getElementById("rule").textContent = p.rule;
+  document.getElementById("code").textContent = p.code;
+  const until = new Date(wonAt + VALID_DAYS * 864e5);
+  document.getElementById("valid").textContent = `Válido até ${formatDate(until)}`;
+  const result = document.getElementById("result");
+  result.hidden = false;
+  const phone = WHATSAPP_NUMBER.replace(/\D/g, "");
+  document.getElementById("redeem").href = `https://wa.me/${phone}?text=${encodeURIComponent(redeemMessage(p))}`;
+  if (animate) setTimeout(() => result.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }), 400);
+  spinBtn.disabled = true;
+  spinBtn.textContent = "FEITO";
+  statusEl.textContent = animate ? "Parabéns! Toque em Resgatar prêmio." : "Você já girou a roleta. Seu prêmio está guardado abaixo.";
+}
+
+function finish(key) {
+  spinning = false;
+  const wonAt = Date.now();
+  store(false, { key, wonAt, rotation: rotation % 360 });
+  showResult(key, wonAt, true);
+  try { navigator.vibrate && navigator.vibrate([60, 40, 120]); } catch (e) {}
+  if (!reduceMotion) confetti();
+}
+
+document.getElementById("copy").addEventListener("click", async (e) => {
+  const code = document.getElementById("code").textContent;
+  const btn = e.currentTarget;
+  try {
+    await navigator.clipboard.writeText(code);
+    btn.textContent = "Copiado!";
+  } catch (err) {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("code"));
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    btn.textContent = "Selecionado: copie";
+  }
+  setTimeout(() => { btn.textContent = "Copiar cupom"; }, 2200);
+});
+
+/* Confete */
+function confetti() {
+  const cv = document.getElementById("confetti");
+  const cx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const colors = ["#ffd23f", "#ff5d8f", "#2ec4b6", "#ff8c42", "#f5f3ee"];
+  const bits = Array.from({ length: 140 }, () => ({
+    x: innerWidth / 2 + (Math.random() - .5) * 80, y: innerHeight * .4,
+    vx: (Math.random() - .5) * 14, vy: -Math.random() * 14 - 4,
+    w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+    rot: Math.random() * 6, vr: (Math.random() - .5) * .4,
+    c: colors[Math.floor(Math.random() * colors.length)]
+  }));
+  const end = performance.now() + 3200;
+  (function loop(now) {
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    bits.forEach(b => {
+      b.vy += .35; b.vx *= .99; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot);
+      cx.fillStyle = b.c; cx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); cx.restore();
+    });
+    if (now < end) requestAnimationFrame(loop);
+    else cx.clearRect(0, 0, innerWidth, innerHeight);
+  })(performance.now());
+}
+
+/* Início */
+function start() {
+  if (location.hash === "#reset") { store(false, null); history.replaceState(null, "", location.pathname); }
+  const saved = store(true);
+  if (saved && PRIZES[saved.key]) {
+    rotation = saved.rotation || 0;
+    showResult(saved.key, saved.wonAt, false);
+  }
+  drawWheel();
+  spinBtn.addEventListener("click", spin);
+  addEventListener("resize", drawWheel);
+  if (document.fonts) document.fonts.ready.then(drawWheel);
+}
+start();
+</script>
+
+</body>
+</html>
